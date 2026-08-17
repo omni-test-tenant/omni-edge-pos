@@ -1,2 +1,2 @@
-# omni-edge-pos
-Offline-first point-of-sale edge client with SQLite
+# OmniCommerce Edge POS Client
+Offline-first Point-of-Sale terminal with background replication.
