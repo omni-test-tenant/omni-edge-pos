@@ -1,4 +1,9 @@
-export async function drainOfflineQueue({ posTerminal, cloudEndpoint, httpClient = globalThis.fetch } = {}) {
+export async function drainOfflineQueue({
+  posTerminal,
+  cloudEndpoint,
+  httpClient = globalThis.fetch,
+  timeoutMs = 5000
+} = {}) {
   if (!posTerminal) throw new Error("posTerminal is required");
   if (!cloudEndpoint) throw new Error("cloudEndpoint is required");
 
@@ -7,6 +12,7 @@ export async function drainOfflineQueue({ posTerminal, cloudEndpoint, httpClient
 
   for (const tx of pending) {
     try {
+      const signal = typeof AbortSignal?.timeout === "function" ? AbortSignal.timeout(timeoutMs) : undefined;
       const response = await httpClient(`${cloudEndpoint}/api/v1/checkout`, {
         method: "POST",
         headers: {
@@ -19,7 +25,8 @@ export async function drainOfflineQueue({ posTerminal, cloudEndpoint, httpClient
           quantity: 1,
           amountCents: tx.totalCents,
           orderId: tx.orderId
-        })
+        }),
+        signal
       });
 
       // HTTP 200, 201, or 409 (idempotent duplicate) are treated as successful sync
